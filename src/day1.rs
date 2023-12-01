@@ -2,16 +2,17 @@ use std::collections::HashMap;
 
 #[aoc(day1, part1)]
 fn part1<'a>(input: &str) -> i32 {
-    input.lines().map(extract_first_and_last).sum()
-}
-
-fn extract_first_and_last(line: &str) -> i32 {
-    let mut chars = line.chars().filter(|c| c.is_digit(10));
-    let first = chars.next().expect("No digit in line");
-    let last = chars.last().unwrap_or_else(|| first);
-    format!("{first}{last}")
-        .parse::<i32>()
-        .expect("Failed to parse number")
+    input
+        .lines()
+        .map(|line| {
+            let mut chars = line.chars().filter(|c| c.is_digit(10));
+            let first = chars.next().expect("No digit in line");
+            let last = chars.last().unwrap_or_else(|| first);
+            format!("{first}{last}")
+                .parse::<i32>()
+                .expect("Failed to parse number")
+        })
+        .sum()
 }
 
 #[aoc(day1, part2)]
