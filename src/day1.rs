@@ -1,23 +1,49 @@
 use std::collections::HashMap;
 
+fn find_first_and_last(input: &str, prefix_to_value: &HashMap<&str, usize>) -> usize {
+    let mut first = (0, usize::MAX);
+    let mut last = (0, 0);
+
+    for (prefix, value) in prefix_to_value {
+        if let Some(index) = input.find(prefix) {
+            if index < first.1 {
+                first.0 = *value;
+                first.1 = index;
+            }
+        }
+        if let Some(index) = input.rfind(prefix) {
+            if index > last.1 {
+                last.0 = *value;
+                last.1 = index;
+            }
+        }
+    }
+
+    first.0 * 10 + last.0
+}
+
 #[aoc(day1, part1)]
-fn part1<'a>(input: &str) -> i32 {
+fn part1<'a>(input: &str) -> usize {
+    let prefix_to_value: HashMap<&str, usize> = maplit::hashmap![
+        "1" => 1,
+        "2" => 2,
+        "3" => 3,
+        "4" => 4,
+        "5" => 5,
+        "6" => 6,
+        "7" => 7,
+        "8" => 8,
+        "9" => 9,
+    ];
     input
         .lines()
-        .map(|line| {
-            let mut chars = line.chars().filter(|c| c.is_digit(10));
-            let first = chars.next().expect("No digit in line");
-            let last = chars.last().unwrap_or_else(|| first);
-            format!("{first}{last}")
-                .parse::<i32>()
-                .expect("Failed to parse number")
-        })
+        .map(|line| find_first_and_last(line, &prefix_to_value))
         .sum()
 }
 
 #[aoc(day1, part2)]
-fn part2<'a>(input: &str) -> i32 {
-    let name_to_index: HashMap<&str, i32> = maplit::hashmap![
+fn part2<'a>(input: &str) -> usize {
+    let prefix_to_value: HashMap<&str, usize> = maplit::hashmap![
         "one" => 1,
         "two" => 2,
         "three" => 3,
@@ -39,19 +65,7 @@ fn part2<'a>(input: &str) -> i32 {
     ];
     input
         .lines()
-        .map(|line| {
-            let mut digits = Vec::new();
-            let mut i = 0;
-            while i <= line.len() {
-                for (prefix, value) in &name_to_index {
-                    if line[i..].starts_with(prefix) {
-                        digits.push(value);
-                    }
-                }
-                i += 1;
-            }
-            digits[0] * 10 + *digits.last().expect("No digits in the line")
-        })
+        .map(|line| find_first_and_last(line, &prefix_to_value))
         .sum()
 }
 
