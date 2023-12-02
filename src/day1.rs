@@ -12,7 +12,7 @@ fn find_first_and_last(input: &str, prefix_to_value: &HashMap<&str, usize>) -> u
             }
         }
         if let Some(index) = input.rfind(prefix) {
-            if index > last.1 {
+            if index >= last.1 {
                 last.0 = *value;
                 last.1 = index;
             }
