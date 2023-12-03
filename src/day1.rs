@@ -1,49 +1,38 @@
-use std::collections::HashMap;
+use aho_corasick::AhoCorasick;
 
-fn find_first_and_last(input: &str, prefix_to_value: &HashMap<&str, usize>) -> usize {
-    let mut first = (0, usize::MAX);
-    let mut last = (0, 0);
-
-    for (prefix, value) in prefix_to_value {
-        if let Some(index) = input.find(prefix) {
-            if index < first.1 {
-                first.0 = *value;
-                first.1 = index;
-            }
-        }
-        if let Some(index) = input.rfind(prefix) {
-            if index >= last.1 {
-                last.0 = *value;
-                last.1 = index;
-            }
-        }
-    }
-
-    first.0 * 10 + last.0
+fn find_first_and_last(line: &str, finder: &AhoCorasick, patterns: &[&str]) -> i32 {
+    let mut matches = finder.find_overlapping_iter(line);
+    let first = matches.next().expect("No digits found").pattern();
+    let last = matches.last().map(|f| f.pattern()).unwrap_or_else(|| first);
+    to_digit(patterns[first]) * 10 + to_digit(patterns[last])
 }
 
+const PART1_PATTERNS: [&str; 9] = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+const PART2_PATTERNS: [&str; 18] = [
+    "1", "2", "3", "4", "5", "6", "7", "8", "9", "one", "two", "three", "four", "five", "six",
+    "seven", "eight", "nine",
+];
+
 #[aoc(day1, part1)]
-fn part1<'a>(input: &str) -> usize {
-    let prefix_to_value: HashMap<&str, usize> = maplit::hashmap![
-        "1" => 1,
-        "2" => 2,
-        "3" => 3,
-        "4" => 4,
-        "5" => 5,
-        "6" => 6,
-        "7" => 7,
-        "8" => 8,
-        "9" => 9,
-    ];
+fn part1<'a>(input: &str) -> i32 {
+    let finder = AhoCorasick::new(PART1_PATTERNS).expect("Failed to build finder");
     input
         .lines()
-        .map(|line| find_first_and_last(line, &prefix_to_value))
+        .map(|line| find_first_and_last(line, &finder, &PART1_PATTERNS))
         .sum()
 }
 
 #[aoc(day1, part2)]
-fn part2<'a>(input: &str) -> usize {
-    let prefix_to_value: HashMap<&str, usize> = maplit::hashmap![
+fn part2<'a>(input: &str) -> i32 {
+    let finder = AhoCorasick::new(PART2_PATTERNS).expect("Failed to build finder");
+    input
+        .lines()
+        .map(|line| find_first_and_last(line, &finder, &PART2_PATTERNS))
+        .sum()
+}
+
+fn to_digit(value: &str) -> i32 {
+    match value {
         "one" => 1,
         "two" => 2,
         "three" => 3,
@@ -62,11 +51,8 @@ fn part2<'a>(input: &str) -> usize {
         "7" => 7,
         "8" => 8,
         "9" => 9,
-    ];
-    input
-        .lines()
-        .map(|line| find_first_and_last(line, &prefix_to_value))
-        .sum()
+        x => panic!("Unknown digit {x}"),
+    }
 }
 
 #[cfg(test)]
