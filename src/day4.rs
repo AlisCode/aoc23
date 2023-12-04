@@ -8,9 +8,14 @@ use aoc_parse::{
 
 #[derive(Debug, PartialEq)]
 pub struct Card {
-    id: usize,
     winning: HashSet<i32>,
     have: HashSet<i32>,
+}
+
+impl Card {
+    pub fn matching(&self) -> usize {
+        self.winning.intersection(&self.have).count()
+    }
 }
 
 #[aoc_generator(day4)]
@@ -21,9 +26,8 @@ fn parse(input: &str) -> Vec<Card> {
     input
         .lines()
         .map(|l| {
-            let (_, _, id, winning, have) = line.parse(l).expect("Failed to parse line");
+            let (_, _, _, winning, have) = line.parse(l).expect("Failed to parse line");
             Card {
-                id,
                 winning: winning.into_iter().collect(),
                 have: have.into_iter().collect(),
             }
@@ -36,7 +40,7 @@ fn part1(input: &[Card]) -> u32 {
     input
         .iter()
         .map(|card| {
-            let count = card.winning.intersection(&card.have).count() as u32;
+            let count = card.matching() as u32;
             if count == 0 {
                 return 0;
             }
@@ -47,17 +51,14 @@ fn part1(input: &[Card]) -> u32 {
 
 #[aoc(day4, part2)]
 fn part2(input: &[Card]) -> usize {
-    // todo: memoize?
-    let copies_earned_by = |id: usize| {
-        let card = &input[id - 1];
-        let count = card.winning.intersection(&card.have).count();
-        if count == 0 {
-            vec![]
-        } else {
-            (1..=count + 1).map(|x| id + x).collect()
+    let mut copies: Vec<usize> = (0..input.len()).map(|_| 1).collect();
+    for (index, card) in input.iter().enumerate() {
+        let matching = card.matching();
+        for i in 1..=matching {
+            copies[index + i] += copies[index];
         }
-    };
-    0
+    }
+    copies.into_iter().sum()
 }
 
 #[cfg(test)]
@@ -79,7 +80,6 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
         assert_eq!(
             input,
             vec![Card {
-                id: 1,
                 winning: hashset![41, 48, 83, 86, 17],
                 have: hashset![83, 86, 6, 31, 17, 9, 48, 53],
             }]
