@@ -49,34 +49,15 @@ fn part1(input: &[RaceInfo]) -> i64 {
     //
     // delta = b² - 4ac
     // delta = t*t - 4*distance
-    // (-t +- sqrt(delta)) / -2
-    //
+    // find the two roots (t +- sqrt(delta)) / 2
     input
         .iter()
         .map(|race| {
             let delta = race.time * race.time - 4 * race.distance;
             let sqrt_delta = (delta as f64).sqrt();
-
-            let sol1 = ((-race.time as f64 - sqrt_delta) / -2.).floor() as i64;
-            // hack: if the distance is EXACTLY equal, we cant say we've BEATEN the record.
-            // We need to press less.
-            let distance_sol1 = sol1 * (race.time - sol1);
-            let sol1 = if distance_sol1 == race.distance {
-                sol1 - 1
-            } else {
-                sol1
-            };
-
-            let sol2 = ((-race.time as f64 + sqrt_delta) / -2.).ceil() as i64;
-            let distance_sol2 = sol2 * (race.time - sol2);
-            let sol2 = if distance_sol2 == race.distance {
-                // hack: if the distance is EXACTLY equal, we cant say we've BEATEN the record
-                // We need to press more.
-                sol2 + 1
-            } else {
-                sol2
-            };
-            sol1 - sol2 + 1
+            let sol1 = ((race.time as f64 - sqrt_delta) / 2.).floor() as i64;
+            let sol2 = ((race.time as f64 + sqrt_delta) / 2.).ceil() as i64;
+            sol2 - sol1 - 1
         })
         .product()
 }
